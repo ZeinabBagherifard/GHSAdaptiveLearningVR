@@ -6,6 +6,7 @@ using UnityEngine;
 public class SessionManager : MonoBehaviour
 {
     public static SessionManager Instance;
+    private QuizUIManager quizUI;
 
     public enum SessionPhase
     {
@@ -29,10 +30,10 @@ public class SessionManager : MonoBehaviour
 
     void Start()
     {
-        StartSession();
+        quizUI = FindObjectOfType<QuizUIManager>();         
     }
 
-    // Initialises the session and begins pre-assessment
+    // Initialises the session and begins pre-assessment, Session starts when user clicks Start on intro screen
     public void StartSession()
     {
         // Reset all symbols to Untested before the session begins
@@ -111,11 +112,14 @@ public class SessionManager : MonoBehaviour
     {
         GHSSymbol current = GetCurrentSymbol();
         Debug.Log($"Showing symbol: {current.display_name} | Phase: {CurrentPhase}");
+
+        // Tell the UI to display the current symbol
+        quizUI.ShowQuestion(current);
     }
 
     private void EndSession()
     {
         CurrentPhase = SessionPhase.Completed;
-        Debug.Log("Session completed.");
+        Debug.Log("Session completed.");        
     }
 }
