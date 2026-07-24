@@ -13,8 +13,9 @@ public class KnowledgeStateManager : MonoBehaviour
     public enum SymbolState
     {
         Untested,
-        Known,
-        Unknown
+        KnownBefore,    // correct in pre-assessment
+        LearnedDuring,  // wrong in pre-assessment, correct in training
+        Struggling      // wrong in both pre-assessment and training
     }
 
     void Awake()
@@ -46,15 +47,45 @@ public class KnowledgeStateManager : MonoBehaviour
         return SymbolState.Untested;
     }
 
-    // Returns only symbols the user has not yet learned
+    // Returns only symbols the user has not yet mastered
     public List<GHSSymbol> GetUnknownSymbols()
     {
         List<GHSSymbol> unknown = new List<GHSSymbol>();
         foreach (GHSSymbol symbol in GHSDataLoader.Database.symbols)
         {
-            if (states[symbol.id] != SymbolState.Known)
+            if (states[symbol.id] == SymbolState.Struggling)
                 unknown.Add(symbol);
         }
         return unknown;
+    }
+
+    // Returns count of symbols known before training
+    public int GetKnownBeforeTraining()
+    {
+        int count = 0;
+        foreach (var state in states.Values)
+            if (state == SymbolState.KnownBefore)
+                count++;
+        return count;
+    }
+
+    // Returns count of symbols learned during training
+    public int GetLearnedDuringTraining()
+    {
+        int count = 0;
+        foreach (var state in states.Values)
+            if (state == SymbolState.LearnedDuring)
+                count++;
+        return count;
+    }
+
+    // Returns count of symbols still not mastered
+    public int GetStillStruggling()
+    {
+        int count = 0;
+        foreach (var state in states.Values)
+            if (state == SymbolState.Struggling)
+                count++;
+        return count;
     }
 }

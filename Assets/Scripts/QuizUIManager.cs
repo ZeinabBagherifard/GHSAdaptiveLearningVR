@@ -1,19 +1,22 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-// Manages the quiz UI � displays symbols, answer buttons, and feedback
+// Manages the quiz UI — displays symbols, answer buttons, and feedback
 public class QuizUIManager : MonoBehaviour
 {
     [Header("Panels")]
     public GameObject introPanel;
-    public GameObject questionPanel; 
-    
+    public GameObject questionPanel;
+    public GameObject endPanel;
+
     [Header("UI References")]
     public Image symbolImage;
     public TextMeshProUGUI questionText;
+    public TextMeshProUGUI progressText;
+    public TextMeshProUGUI scoreText;
     public List<Button> answerButtons;
     public TextMeshProUGUI feedbackText;
 
@@ -21,13 +24,15 @@ public class QuizUIManager : MonoBehaviour
 
     void Start()
     {
-        // Show intro, hide quiz on startup
+        // Show intro, hide quiz and end panel on startup
         introPanel.SetActive(true);
         questionPanel.SetActive(false);
+        endPanel.SetActive(false);
     }
 
     public void OnStartButtonClicked()
     {
+        Debug.Log("Start button clicked"); 
         introPanel.SetActive(false);
         questionPanel.SetActive(true);
         SessionManager.Instance.StartSession();
@@ -37,6 +42,11 @@ public class QuizUIManager : MonoBehaviour
     public void ShowQuestion(GHSSymbol symbol)
     {
         currentSymbol = symbol;
+
+        // Update progress counter
+        int current = SessionManager.Instance.GetCurrentIndex() + 1;
+        int total = SessionManager.Instance.GetTotalCount();
+        progressText.text = $"{SessionManager.Instance.CurrentPhase} | Symbol {current} of {total}";
 
         // Load and display the symbol image from Resources
         Sprite sprite = Resources.Load<Sprite>(symbol.image_resource);
@@ -68,6 +78,10 @@ public class QuizUIManager : MonoBehaviour
 
     private void OnAnswerSelected(string selectedOption)
     {
+        // Disable all buttons immediately to prevent double answering
+        foreach (Button btn in answerButtons)
+            btn.interactable = false; 
+        
         bool isCorrect = selectedOption == currentSymbol.correct_option;
 
         if (isCorrect)
@@ -81,7 +95,32 @@ public class QuizUIManager : MonoBehaviour
             feedbackText.color = Color.red;
         }
 
+        StartCoroutine(SubmitAfterDelay(isCorrect));
+    }
+
+    private IEnumerator SubmitAfterDelay(bool isCorrect)
+    {
+        // Wait so user can read feedback before moving to next symbol
+        yield return new WaitForSeconds(1.5f);
         SessionManager.Instance.SubmitAnswer(isCorrect);
+    }
+
+    // Hides the question panel and displays the KPI end screen with session results
+    public void ShowEndScreen(int knownBefore, int learned, int stillStruggling, int total)
+    {
+        questionPanel.SetActive(false);
+        endPanel.SetActive(true);
+
+        int totalKnown = knownBefore + learned;
+        float accuracy = (totalKnown / (float)total) * 100f;
+        string passOrFail = accuracy >= 80f ? "PASS ✓" : "FAIL ✗";
+
+        scoreText.text =
+            $"Symbols already known:      {knownBefore} / {total}\n" +
+            $"Learned during training:       {learned} / {total}\n" +
+            $"Still needs practice:              {stillStruggling} / {total}\n\n" +
+            $"Final accuracy:                      {accuracy:0}%\n\n" +
+            $"Result:                                   {passOrFail}";
     }
 
     // Fisher-Yates shuffle to randomise answer order

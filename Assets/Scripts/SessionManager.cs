@@ -57,6 +57,20 @@ public class SessionManager : MonoBehaviour
             return trainingQueue[currentIndex];
     }
 
+    // Returns the current position in the active queue
+    public int GetCurrentIndex()
+    {
+        return currentIndex;
+    }
+
+    public int GetTotalCount()
+    {
+        if (CurrentPhase == SessionPhase.PreAssessment)
+            return preAssessmentQueue.Count;
+        else
+            return trainingQueue.Count;
+    }
+
     // Called by the UI when the user selects an answer
     public void SubmitAnswer(bool isCorrect)
     {
@@ -65,9 +79,9 @@ public class SessionManager : MonoBehaviour
         if (CurrentPhase == SessionPhase.PreAssessment)
         {
             if (isCorrect)
-                KnowledgeStateManager.Instance.SetState(current.id, KnowledgeStateManager.SymbolState.Known);
+                KnowledgeStateManager.Instance.SetState(current.id, KnowledgeStateManager.SymbolState.KnownBefore);
             else
-                KnowledgeStateManager.Instance.SetState(current.id, KnowledgeStateManager.SymbolState.Unknown);
+                KnowledgeStateManager.Instance.SetState(current.id, KnowledgeStateManager.SymbolState.Struggling);
 
             currentIndex++;
 
@@ -79,7 +93,7 @@ public class SessionManager : MonoBehaviour
         else if (CurrentPhase == SessionPhase.Training)
         {
             if (isCorrect)
-                KnowledgeStateManager.Instance.SetState(current.id, KnowledgeStateManager.SymbolState.Known);
+                KnowledgeStateManager.Instance.SetState(current.id, KnowledgeStateManager.SymbolState.LearnedDuring);
 
             currentIndex++;
 
@@ -120,6 +134,13 @@ public class SessionManager : MonoBehaviour
     private void EndSession()
     {
         CurrentPhase = SessionPhase.Completed;
-        Debug.Log("Session completed.");        
+        Debug.Log("Session completed.");
+
+        // Calculate KPIs
+        var knownBefore = KnowledgeStateManager.Instance.GetKnownBeforeTraining();
+        var learned = KnowledgeStateManager.Instance.GetLearnedDuringTraining();
+        var struggling = KnowledgeStateManager.Instance.GetStillStruggling();
+
+        quizUI.ShowEndScreen(knownBefore, learned, struggling, 7);
     }
 }
