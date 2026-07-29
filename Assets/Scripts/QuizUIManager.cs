@@ -36,6 +36,9 @@ public class QuizUIManager : MonoBehaviour
     // Display a symbol and its shuffled answer options
     public void ShowQuestion(GHSSymbol symbol)
     {
+        foreach (Button btn in answerButtons)
+            btn.interactable = true; 
+        
         currentSymbol = symbol;
 
         // Load and display the symbol image from Resources
@@ -56,18 +59,22 @@ public class QuizUIManager : MonoBehaviour
         // Assign each option to a button
         for (int i = 0; i < answerButtons.Count; i++)
         {
-            string option = options[i];
+            string capturedOption = options[i];
             TextMeshProUGUI buttonText = answerButtons[i].GetComponentInChildren<TextMeshProUGUI>();
-            buttonText.text = option;
+            buttonText.text = capturedOption;
 
             // Clear previous listeners and assign new one
             answerButtons[i].onClick.RemoveAllListeners();
-            answerButtons[i].onClick.AddListener(() => OnAnswerSelected(option));
+            answerButtons[i].onClick.AddListener(() => OnAnswerSelected(capturedOption));
         }
     }
 
     private void OnAnswerSelected(string selectedOption)
     {
+        // Disable all buttons immediately to prevent double answering
+        foreach (Button btn in answerButtons)
+            btn.interactable = false; 
+        
         bool isCorrect = selectedOption == currentSymbol.correct_option;
 
         if (isCorrect)
@@ -77,10 +84,16 @@ public class QuizUIManager : MonoBehaviour
         }
         else
         {
-            feedbackText.text = "Incorrect. Try again.";
+            feedbackText.text = "Incorrect. You will learn this in training.";
             feedbackText.color = Color.red;
         }
 
+        StartCoroutine(SubmitAfterDelay(isCorrect, 1.5f));
+    }
+
+    private IEnumerator SubmitAfterDelay(bool isCorrect, float delay)
+    {
+        yield return new WaitForSeconds(delay);
         SessionManager.Instance.SubmitAnswer(isCorrect);
     }
 
