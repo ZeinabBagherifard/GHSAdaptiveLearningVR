@@ -16,14 +16,17 @@ public class QuizUIManager : MonoBehaviour
     public TextMeshProUGUI questionText;
     public List<Button> answerButtons;
     public TextMeshProUGUI feedbackText;
+    public GameObject endPanel;
+    public TextMeshProUGUI progressText;
+    public TextMeshProUGUI scoreText;
 
     private GHSSymbol currentSymbol;
 
     void Start()
     {
-        // Show intro, hide quiz on startup
         introPanel.SetActive(true);
         questionPanel.SetActive(false);
+        endPanel.SetActive(false);
     }
 
     public void OnStartButtonClicked()
@@ -40,6 +43,11 @@ public class QuizUIManager : MonoBehaviour
             btn.interactable = true; 
         
         currentSymbol = symbol;
+
+        // Update progress counter
+        int current = SessionManager.Instance.GetCurrentIndex() + 1;
+        int total = SessionManager.Instance.GetTotalCount();
+        progressText.text = $"{SessionManager.Instance.CurrentPhase} | Symbol {current} of {total}";
 
         // Load and display the symbol image from Resources
         Sprite sprite = Resources.Load<Sprite>(symbol.image_resource);
@@ -107,5 +115,23 @@ public class QuizUIManager : MonoBehaviour
             list[i] = list[j];
             list[j] = temp;
         }
+    }
+
+    // Hides the question panel and displays the KPI end screen with session results
+    public void ShowEndScreen(int knownBefore, int learned, int stillStruggling, int total)
+    {
+        questionPanel.SetActive(false);
+        endPanel.SetActive(true);
+
+        int totalKnown = knownBefore + learned;
+        float accuracy = (totalKnown / (float)total) * 100f;
+        string passOrFail = accuracy >= 80f ? "PASS" : "FAIL";
+
+        scoreText.text =
+            $"Symbols already known:      {knownBefore} / {total}\n" +
+            $"Learned during training:       {learned} / {total}\n" +
+            $"Still needs practice:              {stillStruggling} / {total}\n\n" +
+            $"Final accuracy:                      {accuracy:0}%\n\n" +
+            $"Result:                                   {passOrFail}";
     }
 }
