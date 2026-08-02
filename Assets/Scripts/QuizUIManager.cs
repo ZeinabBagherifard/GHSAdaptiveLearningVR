@@ -134,6 +134,22 @@ public class QuizUIManager : MonoBehaviour
         }
     }
 
+    // Briefly shows a transition message between pre-assessment and training
+    public void ShowPhaseTransition(int knownCount, int totalCount)
+    {
+        questionPanel.SetActive(false);
+        // Show a simple message for 3 seconds then start training
+        feedbackText.text = $"Pre-assessment complete!\n\nYou already knew {knownCount} out of {totalCount} symbols.\n\nNow let's practise the ones you missed.";
+        feedbackText.color = Color.white;
+        questionPanel.SetActive(true);
+        StartCoroutine(TransitionToTraining());
+    }
+
+    private IEnumerator TransitionToTraining()
+    {
+        yield return new WaitForSeconds(3f);
+        SessionManager.Instance.BeginTraining();
+    }
     // Hides the question panel and displays the KPI end screen with session results
     public void ShowEndScreen(int knownBefore, int learned, int stillStruggling, int total)
     {

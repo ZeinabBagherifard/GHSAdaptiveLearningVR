@@ -105,6 +105,14 @@ public class SessionManager : MonoBehaviour
         }
 
         Debug.Log($"Training phase started. {trainingQueue.Count} symbol(s) to train.");
+
+        int knownCount = KnowledgeStateManager.Instance.GetKnownBeforeTraining();
+        quizUI.ShowPhaseTransition(knownCount, 7);
+    }
+
+    // Called after transition delay
+    public void BeginTraining()
+    {
         ShowNextSymbol();
     }
 
