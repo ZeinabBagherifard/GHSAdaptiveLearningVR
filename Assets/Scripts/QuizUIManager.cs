@@ -79,24 +79,41 @@ public class QuizUIManager : MonoBehaviour
 
     private void OnAnswerSelected(string selectedOption)
     {
-        // Disable all buttons immediately to prevent double answering
         foreach (Button btn in answerButtons)
-            btn.interactable = false; 
-        
+            btn.interactable = false;
+
         bool isCorrect = selectedOption == currentSymbol.correct_option;
 
-        if (isCorrect)
+        if (SessionManager.Instance.CurrentPhase == SessionManager.SessionPhase.PreAssessment)
         {
-            feedbackText.text = "Correct!";
-            feedbackText.color = Color.green;
+            if (isCorrect)
+            {
+                feedbackText.text = $"Correct!\n{currentSymbol.display_name} — {currentSymbol.correct_meaning}";
+                feedbackText.color = Color.green;
+                StartCoroutine(SubmitAfterDelay(isCorrect, 3f));
+            }
+            else
+            {
+                feedbackText.text = "Not quite. You will practise this in training.";
+                feedbackText.color = new Color(1f, 0.8f, 0f);
+                StartCoroutine(SubmitAfterDelay(isCorrect, 1.5f));
+            }
         }
         else
         {
-            feedbackText.text = "Incorrect. You will learn this in training.";
-            feedbackText.color = Color.red;
+            if (isCorrect)
+            {
+                feedbackText.text = $"Correct!\n{currentSymbol.display_name} — {currentSymbol.correct_meaning}";
+                feedbackText.color = Color.green;
+                StartCoroutine(SubmitAfterDelay(isCorrect, 3f));
+            }
+            else
+            {
+                feedbackText.text = "Not quite. Keep going.";
+                feedbackText.color = new Color(1f, 0.8f, 0f);
+                StartCoroutine(SubmitAfterDelay(isCorrect, 1.5f));
+            }
         }
-
-        StartCoroutine(SubmitAfterDelay(isCorrect, 1.5f));
     }
 
     private IEnumerator SubmitAfterDelay(bool isCorrect, float delay)
@@ -133,5 +150,11 @@ public class QuizUIManager : MonoBehaviour
             $"Still needs practice:              {stillStruggling} / {total}\n\n" +
             $"Final accuracy:                      {accuracy:0}%\n\n" +
             $"Result:                                   {passOrFail}";
+    }
+
+    public void OnRestartButtonClicked()
+    {
+        endPanel.SetActive(false);
+        introPanel.SetActive(true);
     }
 }

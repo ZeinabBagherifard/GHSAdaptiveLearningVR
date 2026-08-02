@@ -207,7 +207,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 697657183}
         m_TargetAssemblyTypeName: QuizUIManager, Assembly-CSharp
-        m_MethodName: OnStartButtonClicked
+        m_MethodName: OnRestartButtonClicked
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
