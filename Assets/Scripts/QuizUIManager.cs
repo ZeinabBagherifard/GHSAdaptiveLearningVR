@@ -9,16 +9,18 @@ public class QuizUIManager : MonoBehaviour
 {
     [Header("Panels")]
     public GameObject introPanel;
-    public GameObject questionPanel; 
-    
+    public GameObject questionPanel;
+    public GameObject answerGroup;
+    public GameObject endPanel;
+
     [Header("UI References")]
     public Image symbolImage;
     public TextMeshProUGUI questionText;
     public List<Button> answerButtons;
-    public TextMeshProUGUI feedbackText;
-    public GameObject endPanel;
+    public TextMeshProUGUI feedbackText;    
     public TextMeshProUGUI progressText;
     public TextMeshProUGUI scoreText;
+
 
     private GHSSymbol currentSymbol;
 
@@ -39,9 +41,17 @@ public class QuizUIManager : MonoBehaviour
     // Display a symbol and its shuffled answer options
     public void ShowQuestion(GHSSymbol symbol)
     {
-        foreach (Button btn in answerButtons)
-            btn.interactable = true; 
+        // Stop any running coroutines from previous question
+        StopAllCoroutines();
         
+        // Re-enable and show buttons for new question
+        foreach (Button btn in answerButtons)
+            btn.interactable = true;
+        answerGroup.SetActive(true);
+
+        // Hide feedback panel for new question
+        feedbackText.gameObject.SetActive(false);
+
         currentSymbol = symbol;
 
         // Update progress counter
@@ -79,8 +89,10 @@ public class QuizUIManager : MonoBehaviour
 
     private void OnAnswerSelected(string selectedOption)
     {
-        foreach (Button btn in answerButtons)
-            btn.interactable = false;
+
+        // Hide buttons to show feedback prominently
+        answerGroup.SetActive(false);
+        feedbackText.gameObject.SetActive(true);
 
         bool isCorrect = selectedOption == currentSymbol.correct_option;
 
@@ -96,7 +108,7 @@ public class QuizUIManager : MonoBehaviour
             {
                 feedbackText.text = "Not quite. You will practise this in training.";
                 feedbackText.color = new Color(1f, 0.8f, 0f);
-                StartCoroutine(SubmitAfterDelay(isCorrect, 1.5f));
+                StartCoroutine(SubmitAfterDelay(isCorrect, 2f));
             }
         }
         else
@@ -137,18 +149,29 @@ public class QuizUIManager : MonoBehaviour
     // Briefly shows a transition message between pre-assessment and training
     public void ShowPhaseTransition(int knownCount, int totalCount)
     {
-        questionPanel.SetActive(false);
-        // Show a simple message for 3 seconds then start training
-        feedbackText.text = $"Pre-assessment complete!\n\nYou already knew {knownCount} out of {totalCount} symbols.\n\nNow let's practise the ones you missed.";
+        // Hide question content, show only transition message
+        answerGroup.SetActive(false);
+        symbolImage.gameObject.SetActive(false);
+        questionText.gameObject.SetActive(false);
+        progressText.gameObject.SetActive(false);
+
+        // Show a simple message then start training
+        feedbackText.gameObject.SetActive(true); 
+        feedbackText.fontSize = 26;
+        feedbackText.text = $"Pre-Assessment Complete!\n\nYou already knew {knownCount} out of {totalCount} symbols.\n\nNow let's practise the ones you missed.";
         feedbackText.color = Color.white;
-        questionPanel.SetActive(true);
         StartCoroutine(TransitionToTraining());
     }
 
     private IEnumerator TransitionToTraining()
     {
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(5f);
+        // Restore question elements
+        symbolImage.gameObject.SetActive(true);
+        questionText.gameObject.SetActive(true);
+        progressText.gameObject.SetActive(true);
         SessionManager.Instance.BeginTraining();
+
     }
     // Hides the question panel and displays the KPI end screen with session results
     public void ShowEndScreen(int knownBefore, int learned, int stillStruggling, int total)
