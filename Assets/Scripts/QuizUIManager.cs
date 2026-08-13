@@ -12,6 +12,7 @@ public class QuizUIManager : MonoBehaviour
     public GameObject questionPanel;
     public GameObject answerGroup;
     public GameObject endPanel;
+    public GameObject feedbackPanel;
 
     [Header("UI References")]
     public Image symbolImage;
@@ -51,6 +52,7 @@ public class QuizUIManager : MonoBehaviour
 
         // Hide feedback panel for new question
         feedbackText.gameObject.SetActive(false);
+        feedbackPanel.SetActive(false);
 
         currentSymbol = symbol;
 
@@ -93,6 +95,7 @@ public class QuizUIManager : MonoBehaviour
         // Hide buttons to show feedback prominently
         answerGroup.SetActive(false);
         feedbackText.gameObject.SetActive(true);
+        feedbackPanel.SetActive(true);
 
         bool isCorrect = selectedOption == currentSymbol.correct_option;
 
@@ -156,7 +159,8 @@ public class QuizUIManager : MonoBehaviour
         progressText.gameObject.SetActive(false);
 
         // Show a simple message then start training
-        feedbackText.gameObject.SetActive(true); 
+        feedbackText.gameObject.SetActive(true);
+        feedbackPanel.SetActive(true);
         feedbackText.fontSize = 26;
         feedbackText.text = $"Pre-Assessment Complete!\n\nYou already knew {knownCount} out of {totalCount} symbols.\n\nNow let's practise the ones you missed.";
         feedbackText.color = Color.white;
