@@ -13,6 +13,7 @@ public class QuizUIManager : MonoBehaviour
     public GameObject answerGroup;
     public GameObject endPanel;
     public GameObject feedbackPanel;
+    public GameObject startTrainingButton;
 
     [Header("UI References")]
     public Image symbolImage;
@@ -53,6 +54,7 @@ public class QuizUIManager : MonoBehaviour
         // Hide feedback panel for new question
         feedbackText.gameObject.SetActive(false);
         feedbackPanel.SetActive(false);
+        startTrainingButton.SetActive(false);
 
         currentSymbol = symbol;
 
@@ -162,21 +164,25 @@ public class QuizUIManager : MonoBehaviour
         feedbackText.gameObject.SetActive(true);
         feedbackPanel.SetActive(true);
         feedbackText.fontSize = 26;
-        feedbackText.text = $"Pre-Assessment Complete!\n\nYou already knew {knownCount} out of {totalCount} symbols.\n\nNow let's practise the ones you missed.";
+        feedbackText.text = $"Pre-Assessment Completed!\n\nYou already knew {knownCount} out of {totalCount} symbols.\n\nNow let's practise the ones you missed.";
         feedbackText.color = Color.white;
-        StartCoroutine(TransitionToTraining());
+        startTrainingButton.SetActive(true);
     }
 
-    private IEnumerator TransitionToTraining()
+    public void OnStartTrainingButtonClicked()
     {
-        yield return new WaitForSeconds(5f);
+        startTrainingButton.SetActive(false);
+        feedbackPanel.SetActive(false);
+        feedbackText.gameObject.SetActive(false);
+
         // Restore question elements
         symbolImage.gameObject.SetActive(true);
         questionText.gameObject.SetActive(true);
         progressText.gameObject.SetActive(true);
-        SessionManager.Instance.BeginTraining();
 
+        SessionManager.Instance.BeginTraining();
     }
+
     // Hides the question panel and displays the KPI end screen with session results
     public void ShowEndScreen(int knownBefore, int learned, int stillStruggling, int total)
     {
