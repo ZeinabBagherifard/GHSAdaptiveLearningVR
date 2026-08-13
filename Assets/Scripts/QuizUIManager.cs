@@ -14,6 +14,7 @@ public class QuizUIManager : MonoBehaviour
     public GameObject endPanel;
     public GameObject feedbackPanel;
     public GameObject startTrainingButton;
+    public GameObject phaseTransitionPanel;    
 
     [Header("UI References")]
     public Image symbolImage;
@@ -22,6 +23,7 @@ public class QuizUIManager : MonoBehaviour
     public TextMeshProUGUI feedbackText;    
     public TextMeshProUGUI progressText;
     public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI phaseTransitionText;
 
 
     private GHSSymbol currentSymbol;
@@ -55,6 +57,7 @@ public class QuizUIManager : MonoBehaviour
         feedbackText.gameObject.SetActive(false);
         feedbackPanel.SetActive(false);
         startTrainingButton.SetActive(false);
+        phaseTransitionPanel.SetActive(false);
 
         currentSymbol = symbol;
 
@@ -105,9 +108,9 @@ public class QuizUIManager : MonoBehaviour
         {
             if (isCorrect)
             {
-                feedbackText.text = $"Correct!\n{currentSymbol.display_name} — {currentSymbol.correct_meaning}";
+                feedbackText.text = $"Correct!\n{currentSymbol.display_name}:\n\n {currentSymbol.correct_meaning}";
                 feedbackText.color = Color.green;
-                StartCoroutine(SubmitAfterDelay(isCorrect, 3f));
+                StartCoroutine(SubmitAfterDelay(isCorrect, 2f));
             }
             else
             {
@@ -154,26 +157,26 @@ public class QuizUIManager : MonoBehaviour
     // Briefly shows a transition message between pre-assessment and training
     public void ShowPhaseTransition(int knownCount, int totalCount)
     {
+        // Hide any leftover per-answer feedback from the last question
+        feedbackPanel.SetActive(false);
+        feedbackText.gameObject.SetActive(false);
+        
         // Hide question content, show only transition message
         answerGroup.SetActive(false);
         symbolImage.gameObject.SetActive(false);
         questionText.gameObject.SetActive(false);
         progressText.gameObject.SetActive(false);
 
-        // Show a simple message then start training
-        feedbackText.gameObject.SetActive(true);
-        feedbackPanel.SetActive(true);
-        feedbackText.fontSize = 26;
-        feedbackText.text = $"Pre-Assessment Completed!\n\nYou already knew {knownCount} out of {totalCount} symbols.\n\nNow let's practise the ones you missed.";
-        feedbackText.color = Color.white;
+        // Show the phase transition message (separate panel from per-answer feedback)
+        phaseTransitionPanel.SetActive(true);
+        phaseTransitionText.text = $"Pre-Assessment Completed!\n\nYou already knew {knownCount} out of {totalCount} symbols.\n\nNow let's practise the ones you missed.";
         startTrainingButton.SetActive(true);
     }
 
     public void OnStartTrainingButtonClicked()
     {
         startTrainingButton.SetActive(false);
-        feedbackPanel.SetActive(false);
-        feedbackText.gameObject.SetActive(false);
+        feedbackPanel.SetActive(false); 
 
         // Restore question elements
         symbolImage.gameObject.SetActive(true);
