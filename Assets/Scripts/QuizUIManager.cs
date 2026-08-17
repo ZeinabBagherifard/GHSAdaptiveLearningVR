@@ -16,6 +16,7 @@ public class QuizUIManager : MonoBehaviour
     public GameObject startTrainingButton;
     public GameObject phaseTransitionPanel;
     public GameObject nextButton;
+    public GameObject startFinalCheckButton;
 
     [Header("UI References")]
     public Image symbolImage;
@@ -60,6 +61,7 @@ public class QuizUIManager : MonoBehaviour
         startTrainingButton.SetActive(false);
         phaseTransitionPanel.SetActive(false);
         nextButton.SetActive(false);
+        startFinalCheckButton.SetActive(false);
 
         currentSymbol = symbol;
 
@@ -211,6 +213,33 @@ public class QuizUIManager : MonoBehaviour
         phaseTransitionPanel.SetActive(true);
         phaseTransitionText.text = $"Pre-Assessment Completed!\n\nYou already knew {knownCount} out of {totalCount} symbols.\n\nNow let's practise the ones you missed.";
         startTrainingButton.SetActive(true);
+    }
+
+    public void ShowFinalCheckTransition(int trainedCount)
+    {
+        feedbackPanel.SetActive(false);
+        feedbackText.gameObject.SetActive(false);
+        answerGroup.SetActive(false);
+        symbolImage.gameObject.SetActive(false);
+        questionText.gameObject.SetActive(false);
+        progressText.gameObject.SetActive(false);
+        nextButton.SetActive(false);
+
+        phaseTransitionPanel.SetActive(true);
+        phaseTransitionText.text = $"Training Complete!\n\nYou've reviewed {trainedCount} symbol(s).\n\nReady for the final check?";
+        startFinalCheckButton.SetActive(true);
+    }
+
+    public void OnStartFinalCheckButtonClicked()
+    {
+        startFinalCheckButton.SetActive(false);
+        phaseTransitionPanel.SetActive(false);
+
+        symbolImage.gameObject.SetActive(true);
+        questionText.gameObject.SetActive(true);
+        progressText.gameObject.SetActive(true);
+
+        SessionManager.Instance.BeginFinalCheck();
     }
 
     public void OnStartTrainingButtonClicked()

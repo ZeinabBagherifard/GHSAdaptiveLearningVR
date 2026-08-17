@@ -100,7 +100,7 @@ public class SessionManager : MonoBehaviour
         currentIndex++;
 
         if (currentIndex >= trainingQueue.Count)
-            StartFinalCheck();
+            ShowFinalCheckTransition();
         else
             ShowNextSymbol();
     }
@@ -125,6 +125,11 @@ public class SessionManager : MonoBehaviour
         quizUI.ShowPhaseTransition(knownCount, 7);
     }
 
+    public void BeginFinalCheck()
+    {
+        StartFinalCheck();
+    }
+
     // Moves from training into the final multiple-choice recheck
     private void StartFinalCheck()
     {
@@ -134,6 +139,12 @@ public class SessionManager : MonoBehaviour
 
         Debug.Log($"Final check phase started. {finalCheckQueue.Count} symbol(s) to verify.");
         ShowNextSymbol();
+    }
+
+    private void ShowFinalCheckTransition()
+    {
+        Debug.Log("Training complete. Awaiting final check confirmation.");
+        quizUI.ShowFinalCheckTransition(trainingQueue.Count);
     }
 
     // Called after transition delay
