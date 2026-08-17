@@ -14,7 +14,8 @@ public class QuizUIManager : MonoBehaviour
     public GameObject endPanel;
     public GameObject feedbackPanel;
     public GameObject startTrainingButton;
-    public GameObject phaseTransitionPanel;    
+    public GameObject phaseTransitionPanel;
+    public GameObject nextButton;
 
     [Header("UI References")]
     public Image symbolImage;
@@ -58,6 +59,7 @@ public class QuizUIManager : MonoBehaviour
         feedbackPanel.SetActive(false);
         startTrainingButton.SetActive(false);
         phaseTransitionPanel.SetActive(false);
+        nextButton.SetActive(false);
 
         currentSymbol = symbol;
 
@@ -92,6 +94,44 @@ public class QuizUIManager : MonoBehaviour
             answerButtons[i].onClick.RemoveAllListeners();
             answerButtons[i].onClick.AddListener(() => OnAnswerSelected(capturedOption));
         }
+    }
+
+    public void ShowTraining(GHSSymbol symbol)
+    {
+        currentSymbol = symbol;
+
+        // Hide quiz elements, show teaching elements
+        answerGroup.SetActive(false);
+        nextButton.SetActive(true);
+        symbolImage.gameObject.SetActive(true);
+
+        feedbackPanel.SetActive(true);
+        feedbackText.gameObject.SetActive(true);
+        feedbackText.color = Color.white;
+        feedbackText.text = $"{symbol.display_name}\n\n{symbol.correct_meaning}";
+
+        int current = SessionManager.Instance.GetCurrentIndex() + 1;
+        int total = SessionManager.Instance.GetTotalCount();
+        progressText.text = $"Training | Symbol {current} of {total}";
+        progressText.color = new Color(0.4f, 0.8f, 1f);
+
+        questionText.text = "Let's learn this symbol";
+
+        // Load and display the symbol image
+        Sprite sprite = Resources.Load<Sprite>(symbol.image_resource);
+        if (sprite != null)
+            symbolImage.sprite = sprite;
+        else
+            Debug.LogWarning($"Image not found: {symbol.image_resource}");
+    }
+
+    public void OnNextButtonClicked()
+    {
+        nextButton.SetActive(false);
+        feedbackPanel.SetActive(false);
+        feedbackText.gameObject.SetActive(false);
+
+        SessionManager.Instance.AdvanceTeaching();
     }
 
     private void OnAnswerSelected(string selectedOption)
@@ -176,7 +216,8 @@ public class QuizUIManager : MonoBehaviour
     public void OnStartTrainingButtonClicked()
     {
         startTrainingButton.SetActive(false);
-        feedbackPanel.SetActive(false); 
+        feedbackPanel.SetActive(false);
+        phaseTransitionPanel.SetActive(false);
 
         // Restore question elements
         symbolImage.gameObject.SetActive(true);

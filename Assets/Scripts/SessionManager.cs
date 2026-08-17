@@ -12,6 +12,7 @@ public class SessionManager : MonoBehaviour
     {
         PreAssessment,
         Training,
+        FinalCheck,
         Completed
     }
 
@@ -20,6 +21,7 @@ public class SessionManager : MonoBehaviour
     // Symbols shown during pre-assessment and training phases
     private List<GHSSymbol> preAssessmentQueue = new List<GHSSymbol>();
     private List<GHSSymbol> trainingQueue = new List<GHSSymbol>();
+    private List<GHSSymbol> finalCheckQueue = new List<GHSSymbol>();
     // Tracks the current position in the active queue
     private int currentIndex = 0;
 
@@ -53,8 +55,10 @@ public class SessionManager : MonoBehaviour
     {
         if (CurrentPhase == SessionPhase.PreAssessment)
             return preAssessmentQueue[currentIndex];
-        else
+        else if (CurrentPhase == SessionPhase.Training)
             return trainingQueue[currentIndex];
+        else
+            return finalCheckQueue[currentIndex];
     }
 
     // Called by the UI when the user selects an answer
@@ -76,18 +80,29 @@ public class SessionManager : MonoBehaviour
             else
                 ShowNextSymbol();
         }
-        else if (CurrentPhase == SessionPhase.Training)
+        else if (CurrentPhase == SessionPhase.FinalCheck)
         {
             if (isCorrect)
                 KnowledgeStateManager.Instance.SetState(current.id, KnowledgeStateManager.SymbolState.LearnedDuring);
 
             currentIndex++;
 
-            if (currentIndex >= trainingQueue.Count)
+            if (currentIndex >= finalCheckQueue.Count)
                 EndSession();
             else
                 ShowNextSymbol();
         }
+    }
+
+    // Called when the user training and showing flags are finished
+    public void AdvanceTeaching()
+    {
+        currentIndex++;
+
+        if (currentIndex >= trainingQueue.Count)
+            StartFinalCheck();
+        else
+            ShowNextSymbol();
     }
 
     // Builds training queue from unknown symbols only
@@ -110,6 +125,17 @@ public class SessionManager : MonoBehaviour
         quizUI.ShowPhaseTransition(knownCount, 7);
     }
 
+    // Moves from training into the final multiple-choice recheck
+    private void StartFinalCheck()
+    {
+        finalCheckQueue = new List<GHSSymbol>(trainingQueue);
+        currentIndex = 0;
+        CurrentPhase = SessionPhase.FinalCheck;
+
+        Debug.Log($"Final check phase started. {finalCheckQueue.Count} symbol(s) to verify.");
+        ShowNextSymbol();
+    }
+
     // Called after transition delay
     public void BeginTraining()
     {
@@ -121,8 +147,10 @@ public class SessionManager : MonoBehaviour
         GHSSymbol current = GetCurrentSymbol();
         Debug.Log($"Showing symbol: {current.display_name} | Phase: {CurrentPhase}");
 
-        // Tell the UI to display the current symbol
-        quizUI.ShowQuestion(current);
+        if (CurrentPhase == SessionPhase.Training)
+            quizUI.ShowTraining(current);
+        else
+            quizUI.ShowQuestion(current);
     }
 
     // Returns the current position in the active queue
@@ -135,8 +163,10 @@ public class SessionManager : MonoBehaviour
     {
         if (CurrentPhase == SessionPhase.PreAssessment)
             return preAssessmentQueue.Count;
-        else
+        else if (CurrentPhase == SessionPhase.Training)
             return trainingQueue.Count;
+        else
+            return finalCheckQueue.Count;
     }
 
     private void EndSession()
