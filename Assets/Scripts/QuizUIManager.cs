@@ -34,7 +34,7 @@ public class QuizUIManager : MonoBehaviour
     {
         introPanel.SetActive(true);
         questionPanel.SetActive(false);
-        endPanel.SetActive(false);        
+        endPanel.SetActive(false);
     }
 
     public void OnStartButtonClicked()
@@ -110,7 +110,7 @@ public class QuizUIManager : MonoBehaviour
         feedbackPanel.SetActive(true);
         feedbackText.gameObject.SetActive(true);
         feedbackText.color = Color.white;
-        feedbackText.text = $"{symbol.display_name}\n\n{symbol.correct_meaning}\n\nWhat to do: {symbol.training_tip}";
+        feedbackText.text = $"{symbol.display_name}\n\n{symbol.correct_meaning}";
 
         int current = SessionManager.Instance.GetCurrentIndex() + 1;
         int total = SessionManager.Instance.GetTotalCount();
@@ -156,7 +156,7 @@ public class QuizUIManager : MonoBehaviour
             }
             else
             {
-                feedbackText.text = "Not quite. You will learn this in training.";
+                feedbackText.text = "Not quite. You will practise this in training.";
                 feedbackText.color = new Color(1f, 0.8f, 0f);
                 StartCoroutine(SubmitAfterDelay(isCorrect, 2f));
             }
