@@ -9,6 +9,8 @@ public class KnowledgeStateManager : MonoBehaviour
 
     // Stores the state of each symbol by its id
     Dictionary<string, SymbolState> states = new Dictionary<string, SymbolState>();
+    private Dictionary<string, string> lastWrongAnswer = new Dictionary<string, string>();
+    private Dictionary<string, string> confusedWithSymbolId = new Dictionary<string, string>();
 
     public enum SymbolState
     {
@@ -57,6 +59,26 @@ public class KnowledgeStateManager : MonoBehaviour
                 unknown.Add(symbol);
         }
         return unknown;
+    }
+
+    public void RecordWrongAnswer(string symbolId, string wrongAnswerText)
+    {
+        lastWrongAnswer[symbolId] = wrongAnswerText;
+    }
+
+    public string GetLastWrongAnswer(string symbolId)
+    {
+        return lastWrongAnswer.ContainsKey(symbolId) ? lastWrongAnswer[symbolId] : null;
+    }
+
+    public void RecordConfusedSymbol(string symbolId, string confusedSymbolId)
+    {
+        confusedWithSymbolId[symbolId] = confusedSymbolId;
+    }
+
+    public string GetConfusedSymbol(string symbolId)
+    {
+        return confusedWithSymbolId.ContainsKey(symbolId) ? confusedWithSymbolId[symbolId] : null;
     }
 
     // Returns count of symbols known before training

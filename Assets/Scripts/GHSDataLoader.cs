@@ -22,4 +22,11 @@ public class GHSDataLoader : MonoBehaviour
 
         Debug.Log($"Loaded {Database.symbols.Count} GHS symbol(s) successfully.");
     }
+    public static GHSSymbol FindSymbolByCorrectOption(string optionText)
+    {
+        foreach (var s in Database.symbols)
+            if (s.correct_option == optionText)
+                return s;
+        return null;
+    }
 }

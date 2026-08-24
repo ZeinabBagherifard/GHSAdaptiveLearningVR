@@ -110,7 +110,7 @@ public class QuizUIManager : MonoBehaviour
         feedbackPanel.SetActive(true);
         feedbackText.gameObject.SetActive(true);
         feedbackText.color = Color.white;
-        feedbackText.text = $"{symbol.display_name}\n\n{symbol.correct_meaning}";
+        feedbackText.text = $"{symbol.display_name}\n\nLoading...";
 
         int current = SessionManager.Instance.GetCurrentIndex() + 1;
         int total = SessionManager.Instance.GetTotalCount();
@@ -119,14 +119,37 @@ public class QuizUIManager : MonoBehaviour
 
         questionText.text = "Let's learn this symbol";
 
-        // Load and display the symbol image
         Sprite sprite = Resources.Load<Sprite>(symbol.image_resource);
         if (sprite != null)
             symbolImage.sprite = sprite;
         else
             Debug.LogWarning($"Image not found: {symbol.image_resource}");
-    }
 
+        string actualWrongAnswer = KnowledgeStateManager.Instance.GetLastWrongAnswer(symbol.id) ?? "no specific answer recorded";
+        string confusedId = KnowledgeStateManager.Instance.GetConfusedSymbol(symbol.id);
+        GHSSymbol confusedSymbolData = confusedId != null
+            ? System.Array.Find(GHSDataLoader.Database.symbols.ToArray(), s => s.id == confusedId)
+            : null;
+        string confusedMeaning = confusedSymbolData != null ? confusedSymbolData.correct_meaning : "";
+
+        GetComponent<GeminiProxyClient>().RequestExplanation(
+            symbol.display_name, actualWrongAnswer, symbol.correct_meaning, symbol.training_tip,
+            confusedSymbolData != null ? confusedSymbolData.display_name : "",
+            confusedSymbolData != null ? confusedMeaning : "",
+            (explanation) =>
+            {
+                string cleaned = CleanMarkdown(explanation);
+                if (!cleaned.ToLower().Contains("safety tip"))
+                    cleaned += $"\n\nSafety Tip: {symbol.training_tip}";
+                feedbackText.text = $"{symbol.display_name}\n\n{cleaned}";
+            },
+            (error) =>
+            {
+                Debug.LogWarning($"Gemini explanation failed, using fallback: {error}");
+                feedbackText.text = $"{symbol.display_name}\n\n{symbol.correct_meaning}\n\nSafety Tip: {symbol.training_tip}";
+            }
+        );
+    }
     public void OnNextButtonClicked()
     {
         nextButton.SetActive(false);
@@ -156,8 +179,14 @@ public class QuizUIManager : MonoBehaviour
             }
             else
             {
-                feedbackText.text = "Not quite. You will practise this in training.";
+                feedbackText.text = "Not quite. You will learn this in training.";
                 feedbackText.color = new Color(1f, 0.8f, 0f);
+
+                KnowledgeStateManager.Instance.RecordWrongAnswer(currentSymbol.id, selectedOption);
+                GHSSymbol confusedSymbol = GHSDataLoader.FindSymbolByCorrectOption(selectedOption);
+                if (confusedSymbol != null)
+                    KnowledgeStateManager.Instance.RecordConfusedSymbol(currentSymbol.id, confusedSymbol.id);
+
                 StartCoroutine(SubmitAfterDelay(isCorrect, 2f));
             }
         }
@@ -194,6 +223,11 @@ public class QuizUIManager : MonoBehaviour
             list[i] = list[j];
             list[j] = temp;
         }
+    }
+
+    private string CleanMarkdown(string text)
+    {
+        return text.Replace("**", "").Replace("*", "");
     }
 
     // Briefly shows a transition message between pre-assessment and training

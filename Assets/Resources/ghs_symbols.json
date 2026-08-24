@@ -7,9 +7,9 @@
       "correct_option": "May ignite or catch fire easily.",
       "correct_meaning": "The flame pictogram indicates a fire hazard, such as flammability or certain self-reactive or self-heating properties.",
       "wrong_options": [
-        "Can cause severe skin burns or eye damage.",
-        "Can be fatal after short-term exposure.",
-        "Contains gas under pressure."
+        "Contains gas under pressure.",
+        "Can be fatal or toxic after short-term exposure.",
+        "Can cause severe skin burns or eye damage, and may corrode metals."
       ],
       "training_tip": "Keep away from heat, hot surfaces, sparks, open flames and other ignition sources. No smoking."
     },
@@ -20,9 +20,9 @@
       "correct_option": "Can be fatal or toxic after short-term exposure.",
       "correct_meaning": "The skull and crossbones pictogram indicates severe acute toxicity. The substance may be fatal or toxic if swallowed, in contact with skin, or inhaled.",
       "wrong_options": [
-        "Indicates a fire hazard.",
-        "May cause irritation or less severe health effects.",
-        "Is hazardous to aquatic life."
+        "May cause serious or long-term health effects.",
+        "May cause irritation or other less severe acute health effects.",
+        "May ignite or catch fire easily."
       ],
       "training_tip": "Avoid exposure and do not eat, drink or smoke while using the product. Follow the label and Safety Data Sheet for required protection and emergency actions."
     },
@@ -33,9 +33,9 @@
       "correct_option": "Can cause severe skin burns or eye damage, and may corrode metals.",
       "correct_meaning": "The corrosion pictogram indicates skin corrosion, serious eye damage, and/or corrosivity to metals.",
       "wrong_options": [
-        "Can be fatal after short-term exposure.",
-        "Indicates a fire hazard.",
-        "May cause serious long-term health effects."
+        "May cause irritation or other less severe acute health effects.",
+        "Can be fatal or toxic after short-term exposure.",
+        "Contains gas under pressure."
       ],
       "training_tip": "Use the protective gloves, clothing and eye or face protection specified on the label or Safety Data Sheet. Avoid skin and eye contact."
     },
@@ -46,9 +46,9 @@
       "correct_option": "May cause irritation or other less severe acute health effects.",
       "correct_meaning": "The exclamation-mark pictogram may indicate harmful acute toxicity, skin or eye irritation, an allergic skin reaction, respiratory irritation, or drowsiness and dizziness.",
       "wrong_options": [
-        "Can cause severe skin burns or eye damage.",
-        "Can be fatal after short-term exposure.",
-        "Contains gas under pressure."
+        "Can cause severe skin burns or eye damage, and may corrode metals.",
+        "Can be fatal or toxic after short-term exposure.",
+        "Is hazardous to aquatic life."
       ],
       "training_tip": "Avoid contact or inhalation as indicated on the label or Safety Data Sheet, and wash thoroughly after handling."
     },
@@ -59,9 +59,9 @@
       "correct_option": "May cause serious or long-term health effects.",
       "correct_meaning": "The health-hazard pictogram may indicate cancer, genetic mutations, reproductive harm, respiratory sensitization, organ damage, or aspiration hazard.",
       "wrong_options": [
-        "Can cause severe skin burns or eye damage.",
-        "Indicates a fire hazard.",
-        "Is hazardous to aquatic life."
+        "Can be fatal or toxic after short-term exposure.",
+        "May cause irritation or other less severe acute health effects.",
+        "Can cause severe skin burns or eye damage, and may corrode metals."
       ],
       "training_tip": "Read all safety precautions before use and minimise exposure. Use the controls and protective equipment specified on the label or Safety Data Sheet."
     },
@@ -72,9 +72,9 @@
       "correct_option": "Is hazardous to aquatic life.",
       "correct_meaning": "The environment pictogram indicates an acute or long-term hazard to aquatic life.",
       "wrong_options": [
-        "Indicates a fire hazard.",
-        "May cause irritation or less severe health effects.",
-        "Can be fatal after short-term exposure."
+        "Can be fatal or toxic after short-term exposure.",
+        "May ignite or catch fire easily.",
+        "Contains gas under pressure."
       ],
       "training_tip": "Avoid release to the environment and follow the disposal instructions on the label or Safety Data Sheet."
     },
@@ -85,8 +85,8 @@
       "correct_option": "Contains gas under pressure.",
       "correct_meaning": "The gas-cylinder pictogram indicates gas under pressure. Compressed, liquefied or dissolved gas may explode if heated, while refrigerated gas may cause cryogenic burns or injury.",
       "wrong_options": [
-        "Indicates a fire hazard.",
-        "May cause serious long-term health effects.",
+        "May ignite or catch fire easily.",
+        "May cause serious or long-term health effects.",
         "Is hazardous to aquatic life."
       ],
       "training_tip": "Protect from sunlight and store in a well-ventilated place. Follow the label or Safety Data Sheet and do not expose the container to heat."
