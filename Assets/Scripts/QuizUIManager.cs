@@ -17,6 +17,7 @@ public class QuizUIManager : MonoBehaviour
     public GameObject phaseTransitionPanel;
     public GameObject nextButton;
     public GameObject startFinalCheckButton;
+    public GameObject divider;
 
     [Header("UI References")]
     public Image symbolImage;
@@ -27,8 +28,20 @@ public class QuizUIManager : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI phaseTransitionText;
 
-
     private GHSSymbol currentSymbol;
+
+    [Header("Training Side-by-Side")]
+    public TextMeshProUGUI trainingDifferenceText;
+
+    public GameObject trainingCorrectPanel;
+    public TextMeshProUGUI trainingCorrectNameText;
+    public Image trainingCorrectImage;
+    public TextMeshProUGUI trainingCorrectText;
+
+    public GameObject trainingConfusedPanel;
+    public TextMeshProUGUI trainingConfusedNameText;
+    public Image trainingConfusedImage;
+    public TextMeshProUGUI trainingConfusedText;
 
     void Start()
     {
@@ -54,6 +67,7 @@ public class QuizUIManager : MonoBehaviour
         foreach (Button btn in answerButtons)
             btn.interactable = true;
         answerGroup.SetActive(true);
+        divider.SetActive(true);
 
         // Hide feedback panel for new question
         feedbackText.gameObject.SetActive(false);
@@ -62,6 +76,9 @@ public class QuizUIManager : MonoBehaviour
         phaseTransitionPanel.SetActive(false);
         nextButton.SetActive(false);
         startFinalCheckButton.SetActive(false);
+        trainingCorrectPanel.SetActive(false);
+        trainingConfusedPanel.SetActive(false);
+        trainingDifferenceText.gameObject.SetActive(false);
 
         currentSymbol = symbol;
 
@@ -101,60 +118,72 @@ public class QuizUIManager : MonoBehaviour
     public void ShowTraining(GHSSymbol symbol)
     {
         currentSymbol = symbol;
-
-        // Hide quiz elements, show teaching elements
         answerGroup.SetActive(false);
         nextButton.SetActive(true);
-        symbolImage.gameObject.SetActive(true);
-
-        feedbackPanel.SetActive(true);
-        feedbackText.gameObject.SetActive(true);
-        feedbackText.color = Color.white;
-        feedbackText.text = $"{symbol.display_name}\n\nLoading...";
+        symbolImage.gameObject.SetActive(false);
+        feedbackPanel.SetActive(false);
+        feedbackText.gameObject.SetActive(false);
+        divider.SetActive(false);
 
         int current = SessionManager.Instance.GetCurrentIndex() + 1;
         int total = SessionManager.Instance.GetTotalCount();
         progressText.text = $"Training | Symbol {current} of {total}";
         progressText.color = new Color(0.4f, 0.8f, 1f);
 
-        questionText.text = "Let's learn this symbol";
-
-        Sprite sprite = Resources.Load<Sprite>(symbol.image_resource);
-        if (sprite != null)
-            symbolImage.sprite = sprite;
-        else
-            Debug.LogWarning($"Image not found: {symbol.image_resource}");
-
         string actualWrongAnswer = KnowledgeStateManager.Instance.GetLastWrongAnswer(symbol.id) ?? "no specific answer recorded";
         string confusedId = KnowledgeStateManager.Instance.GetConfusedSymbol(symbol.id);
         GHSSymbol confusedSymbolData = confusedId != null
             ? System.Array.Find(GHSDataLoader.Database.symbols.ToArray(), s => s.id == confusedId)
             : null;
-        string confusedMeaning = confusedSymbolData != null ? confusedSymbolData.correct_meaning : "";
 
-        GetComponent<GeminiProxyClient>().RequestExplanation(
-            symbol.display_name, actualWrongAnswer, symbol.correct_meaning, symbol.training_tip,
-            confusedSymbolData != null ? confusedSymbolData.display_name : "",
-            confusedSymbolData != null ? confusedMeaning : "",
-            (explanation) =>
-            {
-                string cleaned = CleanMarkdown(explanation);
-                if (!cleaned.ToLower().Contains("safety tip"))
-                    cleaned += $"\n\nSafety Tip: {symbol.training_tip}";
-                feedbackText.text = $"{symbol.display_name}\n\n{cleaned}";
-            },
-            (error) =>
-            {
-                Debug.LogWarning($"Gemini explanation failed, using fallback: {error}");
-                feedbackText.text = $"{symbol.display_name}\n\n{symbol.correct_meaning}\n\nSafety Tip: {symbol.training_tip}";
-            }
-        );
+        questionText.text = confusedSymbolData != null ? "You mixed these up:" : "Let's learn this symbol";
+        trainingDifferenceText.gameObject.SetActive(false);
+
+        // Right panel: current symbol — instant, from JSON
+        trainingCorrectPanel.SetActive(true);
+        trainingCorrectNameText.text = symbol.display_name;
+        trainingCorrectImage.sprite = Resources.Load<Sprite>(symbol.image_resource);
+        trainingCorrectText.text = $"{symbol.correct_meaning}\n\nSafety Tip: {symbol.training_tip}";
+
+        // Left panel: confused symbol — instant, from JSON
+        if (confusedSymbolData != null)
+        {
+            trainingConfusedPanel.SetActive(true);
+            trainingConfusedNameText.text = confusedSymbolData.display_name;
+            trainingConfusedImage.sprite = Resources.Load<Sprite>(confusedSymbolData.image_resource);
+            trainingConfusedText.text = $"{confusedSymbolData.correct_meaning}\n\nSafety Tip: {confusedSymbolData.training_tip}";
+
+            // Only call Gemini if there's actually a confusion to explain
+            GetComponent<GeminiProxyClient>().RequestExplanation(
+                symbol.display_name, actualWrongAnswer, symbol.correct_meaning, symbol.training_tip,
+                confusedSymbolData.display_name, confusedSymbolData.correct_meaning,
+                (explanation) =>
+                {
+                    string cleaned = CleanMarkdown(explanation);
+                    if (!string.IsNullOrWhiteSpace(cleaned))
+                    {
+                        trainingDifferenceText.text = cleaned;
+                        trainingDifferenceText.gameObject.SetActive(true);
+                    }
+                },
+                (error) =>
+                {
+                    Debug.LogWarning($"Gemini difference request failed: {error}");
+                    trainingDifferenceText.gameObject.SetActive(false);
+                }
+            );
+        }
+        else
+        {
+            trainingConfusedPanel.SetActive(false);
+        }
     }
+
     public void OnNextButtonClicked()
     {
         nextButton.SetActive(false);
-        feedbackPanel.SetActive(false);
-        feedbackText.gameObject.SetActive(false);
+        trainingCorrectPanel.SetActive(false);
+        trainingConfusedPanel.SetActive(false);
 
         SessionManager.Instance.AdvanceTeaching();
     }
@@ -236,7 +265,10 @@ public class QuizUIManager : MonoBehaviour
         // Hide any leftover per-answer feedback from the last question
         feedbackPanel.SetActive(false);
         feedbackText.gameObject.SetActive(false);
-        
+        trainingCorrectPanel.SetActive(false);
+        trainingConfusedPanel.SetActive(false);
+        trainingDifferenceText.gameObject.SetActive(false);
+
         // Hide question content, show only transition message
         answerGroup.SetActive(false);
         symbolImage.gameObject.SetActive(false);
@@ -258,6 +290,7 @@ public class QuizUIManager : MonoBehaviour
         questionText.gameObject.SetActive(false);
         progressText.gameObject.SetActive(false);
         nextButton.SetActive(false);
+        trainingDifferenceText.gameObject.SetActive(false);
 
         phaseTransitionPanel.SetActive(true);
         phaseTransitionText.text = $"Training Complete!\n\nYou've reviewed {trainedCount} symbol(s).\n\nReady for the final check?";
